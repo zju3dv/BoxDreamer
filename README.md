@@ -1,5 +1,5 @@
 # BoxDreamer: Dreaming Box Corners for Generalizable Object Pose Estimation
-### [Project Page](https://zju3dv.github.io/BoxDreamer) | [Paper]([https://arxiv.org/abs/2501.07556](https://zju3dv.github.io/BoxDreamer)) | [🤗 Demo](https://huggingface.co/spaces/LittleFrog/BoxDreamer)
+### [Project Page](https://zju3dv.github.io/boxdreamer) | [Paper](https://zju3dv.github.io/boxdreamer) | [🤗 Demo](https://huggingface.co/spaces/LittleFrog/BoxDreamer)
 
 > BoxDreamer: Dreaming Box Corners for Generalizable Object Pose Estimation\
 > [Yuanhong Yu](https://yuanhongyu.xyz/),
