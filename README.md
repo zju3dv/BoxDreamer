@@ -20,6 +20,10 @@
 ## Citation
 
 ```
-@inproceedings{
+@article{yu2025boxdreamer,
+  title={BoxDreamer: Dreaming Box Corners for Generalizable Object Pose Estimation},
+  author={Yu, Yuanhong and He, Xingyi and Zhao, Chen and Yu, Junhao and Yang, Jiaqi and Hu, Ruizhen and Shen, Yujun and Zhu, Xing and Zhou, Xiaowei and Peng, Sida},
+  journal={arXiv preprint arXiv:2504.07955},
+  year={2025}
 }
 ```
