@@ -10,7 +10,7 @@
 [Ruizhen Hu](https://csse.szu.edu.cn/staff/ruizhenhu/)
 [Yujun Shen](https://shenyujun.github.io/)
 [Xing Zhu](https://openreview.net/profile?id=~Xing_Zhu2),
-[Xiaowei Zhou](https://www.xzhou.me/)
+[Xiaowei Zhou](https://www.xzhou.me/), 
 [Sida Peng](https://pengsida.net/)<sup>†</sup> \
 > Arxiv 2025
 
