@@ -1,0 +1,30 @@
+# config/callbacks/default.yaml
+model_checkpoint:
+  _target_: pytorch_lightning.callbacks.ModelCheckpoint
+  monitor: "val_loss"
+  save_top_k: 1
+  save_last: True
+  mode: "min"
+  filename: "Best-{epoch:02d}-{val_loss:.5f}"
+  auto_insert_metric_name: True
+  dirpath: "${hydra:runtime.cwd}/models/checkpoints/${exp_name}"
+  every_n_train_steps: 200
+  save_on_train_epoch_end: False
+  enable_version_counter: False # disable version counter (Warning: this will overwrite the existing checkpoints)
+
+lr_monitor:
+  _target_: pytorch_lightning.callbacks.LearningRateMonitor
+  logging_interval: 'step'
+
+RichModelSummary:
+  _target_: pytorch_lightning.callbacks.RichModelSummary
+  summary: 'full'
+  max_depth: 3
+  max_children: 3
+  tablefmt: 'github'
+
+# Uncomment and configure if needed
+# NetworkMonitor:
+#   _target_: src.callbacks.custom_callbacks.NetworkMonitor
+#   log_to_loggers: False
+#   names: null

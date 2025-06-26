@@ -1,0 +1,6 @@
+# config/hydra/default.yaml
+run:
+  dir: logs/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}-${exp_name}
+sweep:
+  dir: logs/multiruns/${now:%Y-%m-%d_%H-%M-%S}
+  subdir: ${hydra.job.num}

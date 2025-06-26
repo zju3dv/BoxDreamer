@@ -1,0 +1,24 @@
+# config/config.yaml
+defaults:
+  - trainer: default
+  - model: transformer
+  - datamodule: local
+  - callbacks: default
+  - logger: default
+  - hydra: default
+
+seed: 42
+max_epochs: 500
+pretrain_name: boxdreamer
+exp_name: boxdreamer_train
+mode: 'train'
+resume: True
+use_pretrained: False
+mask_bg: True
+precision: "bf16"
+image_size: 224
+patch_size: 14
+length: 6
+coordinate: 'object' # 'first_camera' or 'object' or 'optical_center'
+pose_representation: 'bb8' # plucker or bb8 or vector
+bbox_representation: 'heatmap' # heatmap or voting or cornernet

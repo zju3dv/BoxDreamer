@@ -1,0 +1,87 @@
+# config/datamodule/onepose.yaml
+_target_: src.datamodules.BoxDreamer_datamodule.BoxDreamerDataModule
+train_datasets: [LINEMOD]
+val_datasets: [LINEMOD]
+test_datasets: [LINEMOD]
+dataset_name: ["${datamodule.train_datasets}", "${datamodule.val_datasets}", "${datamodule.test_datasets}"]
+batch_size: 22
+num_workers: 8
+pin_memory: False
+
+# Define shared base configuration for all datasets
+base_config: &base_config
+  image_size: ${image_size}
+  length: ${length}
+  dynamic_length: False
+  stride: [1, 10] # Default stride, can be overridden
+  dynamic_stride: False
+  random_stride: False
+  uniform_sampling: True
+  fps_sampling: False
+  pose_augmentation: False
+  mask_augmentation: False
+  intri_augmentation: False
+  compute_optical: True
+  max_norm: False
+  precision: ${precision}
+  coordinate: ${coordinate}
+  use_bbox: True
+  use_mask: False
+  mask_bg: ${mask_bg}
+  pose_representation: ${pose_representation}
+  bbox_representation: ${bbox_representation}
+
+  augmentation: # only used for training set
+    rgb_augmethods: ['dark', 'mobile'] # 'YCBAug', 'FDA' or null
+    obj_truncation_ratio: [0.0, 0.2]
+    obj_mask_ratio: [0.0, 0.4]
+    obj_paste_prob: 0.4
+    enable_image_rotation: False
+
+LINEMOD:
+  name: 'LINEMOD'
+  config:
+    base:
+      <<: *base_config
+      stride: [1, 10] # Specific to this dataset
+    cat_filter: null # ["ape", "can", "holepuncher", "iron", "phone"]
+    root: "${hydra:runtime.cwd}/data/lm"
+    model_suffix: null
+    reference_suffix: null
+
+CO3D:
+  name: 'CO3D'
+  config:
+    base:
+      <<: *base_config
+      stride: [1, 20] # Dataset-specific
+      pose_augmentation: False # Dataset-specific
+      use_bbox: False # Dataset-specific
+    root: "${hydra:runtime.cwd}/data"
+    model_suffix: null
+    reference_suffix: null
+
+OnePose:
+  name: 'OnePose'
+  config:
+    base:
+      <<: *base_config
+      stride: [5, 25] # Dataset-specific
+    cat_filter: null # Dataset-specific
+    root: "${hydra:runtime.cwd}/data/onepose"
+    model_suffix: null
+    reference_suffix: null
+
+Objaverse:
+  name: 'Objaverse'
+  config:
+    base:
+      <<: *base_config
+      stride: [1, 5] # Dataset-specific
+      uniform_sampling: True # Dataset-specific
+      fps_sampling: False # Dataset-specific
+      use_bbox: False # Dataset-specific
+    subdir_num: null
+    root: "${hydra:runtime.cwd}/data/objaverse"
+    model_suffix: null
+    reference_suffix: null

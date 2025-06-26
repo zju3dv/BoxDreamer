@@ -1,0 +1,127 @@
+# config/datamodule/onepose.yaml
+_target_: src.datamodules.BoxDreamer_datamodule.BoxDreamerDataModule
+train_datasets: [LINEMOD]
+val_datasets: [LINEMOD]
+test_datasets: [LINEMOD]
+dataset_name: ["${datamodule.train_datasets}", "${datamodule.val_datasets}", "${datamodule.test_datasets}"]
+batch_size: 1
+num_workers: 0
+pin_memory: True
+
+# Shared base configuration for all datasets
+base_config: &base_config
+  image_size: 224
+  length: 1  # Default length, can be overridden
+  dynamic_length: False
+  stride: [1, 10]  # Default stride, can be overridden
+  dynamic_stride: False
+  random_stride: False
+  uniform_sampling: True  # Default sampling method
+  fps_sampling: False  # Default sampling method
+  pose_augmentation: False
+  intri_augmentation: False
+  compute_optical: True
+  max_norm: False
+  precision: '32'
+  coordinate: 'object'
+  use_bbox: True
+  use_mask: False
+  reconstruction_stage: True # means only load reference image
+  pose_representation: 'bb8'
+  bbox_representation: 'heatmap'
+
+  augmentation: # only used for training set
+    rgb_augmethods: ['dark', 'mobile'] # 'YCBAug', 'FDA' or null
+    obj_truncation_ratio: 0.3
+    obj_mask_ratio: 0.3
+    enable_image_rotation: False
+
+
+# Dataset-specific configurations
+LINEMOD:
+  name: 'LINEMOD'
+  config:
+    base:
+      <<: *base_config
+    root: "data/lm"
+    cat_filter: null # ['cat', 'duck', 'benchvise', 'camera', 'driller', 'lamp']
+    model_suffix: null
+    reference_suffix: null
+
+LINEMODO:
+  name: 'LINEMODO'
+  config:
+    base:
+      <<: *base_config
+    root: "data/lmo"
+    cat_filter: null
+    model_suffix: null
+    reference_suffix: null
+
+YCBV:
+  name: 'YCBV'
+  config:
+    base:
+      <<: *base_config
+    root: "data/ycbv"
+    cat_filter: null
+    model_suffix: null
+    reference_suffix: null
+
+MOPED:
+  name: 'MOPED'
+  config:
+    base:
+      <<: *base_config
+      stride: [1, 5]  # Overridden for MOPED
+      uniform_sampling: True  # Overridden for MOPED
+      fps_sampling: False  # Overridden for MOPED
+    root: "data/moped_preprocessed"
+    cat_filter: null  # ['test-toy_plane-00', 'test-toy_plane-01', 'test-toy_plane-02', 'test-toy_plane-03', 'test-toy_plane-04']
+    model_suffix: null
+    reference_suffix: null
+
+CO3D:
+  name: 'CO3D'
+  config:
+    base:
+      <<: *base_config
+      stride: [1, 20]  # Overridden for CO3D
+    root: "data"
+    model_suffix: null
+    reference_suffix: null
+
+OnePose:
+  name: 'OnePose'
+  config:
+    base:
+      <<: *base_config
+      stride: [5, 25]  # Overridden for OnePose
+    root: "data/onepose"
+    cat_filter: null # ['004_sugar_box/0051']
+    model_suffix: null
+    reference_suffix: null
+
+OnePose_Lowtexture:
+  name: 'OnePose'
+  config:
+    base:
+      <<: *base_config
+      stride: [5, 25]  # Overridden for OnePose
+    root: "data/onepose-lowtexture"
+    cat_filter: null # ['0408'] # null # ['004_sugar_box/0051']
+    model_suffix: null
+    reference_suffix: null
+
+Objaverse:
+  name: 'Objaverse'
+  config:
+    base:
+      <<: *base_config
+      stride: [1, 5]  # Overridden for Objaverse
+      uniform_sampling: True  # Overridden for Objaverse
+      fps_sampling: True  # Explicitly set for Objaverse
+    subdir_num: 100
+    root: "data/objaverse"
+    model_suffix: null
+    reference_suffix: null

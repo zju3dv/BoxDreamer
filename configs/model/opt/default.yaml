@@ -1,0 +1,14 @@
+optimizer: "adamw"
+true_lr: 4e-4
+adam_decay: 0.
+adamw_decay: 0.1
+adamw_amsgrad: False
+scheduler: "CosineAnnealing"
+scheduler_invervel: "step"
+mslr_milestones: [30, 50, 100, 200, 300, 400]
+mslr_gamma: 0.5
+cosa_tmax: ${max_epochs}
+cosa_eta_min: 1e-6
+elr_gamma: 0.999992
+use_warmup: True
+warmup_steps: 10000

@@ -1,0 +1,71 @@
+defaults:
+  - metrics: default
+  - vis: default
+  - loss: default
+  - opt: default
+
+_target_: src.lightning.BoxDreamer_lightning_model.PL_BoxDreamer
+resume_ckpt: "${hydra:runtime.cwd}/models/checkpoints/${exp_name}/last.ckpt"
+pretrained_ckpt: "${hydra:runtime.cwd}/models/checkpoints/${pretrain_name}/last.ckpt"
+modules:
+  use_keypoints: False
+  use_matching: False
+  use_tracking: False
+  use_rgb: True
+  use_pp: True
+  ref_type: "all" # neighbor or gt-neighbor or all or multi-round
+  regression_intri: True
+  rotation_type: null
+  coordinate: ${coordinate}
+  pose_representation: ${pose_representation}
+  bbox_representation: ${bbox_representation}
+  patchify_rays: True
+  stage: "decoder_only" # or Simultaneous, neighbor_selector, decoder_only
+
+  dense_cfg:
+    enable: False
+    filter_enable: True
+    filter: 'dino' # or selector, or null
+    filter_topk: 5
+    multi_round: False
+    sub_batch_size: 5
+    fine_level: False
+    fine_topk: 5
+    dense_mem_friendly: False
+
+  decoder:
+    d_model: 768
+    nhead: 8
+    num_decoder_layers: 12
+    camera_emb: "MLP"
+    track_emb: null
+    match_emb: null
+    decoder_only: True
+    patch_size: ${patch_size}
+    img_size: ${image_size}
+    diff_emb: False
+    nvs_supervision: False
+    ray_supervision: True
+    use_mask: False
+  tracker:
+    ckpt_path: null
+    cfg:
+      grid_size: 20
+      freeze: True
+  encoder:
+    name: 'dino'
+    resnet:
+      ckpt_path: null
+      cfg:
+        model_type: 'resnet18'
+        freeze: True
+    dino:
+      ckpt_path: null # "/home/xxx/.cache/torch/hub/facebookresearch_dinov2_main"
+      cfg:
+        model_type: 'dinov2_vitb14_reg'
+        freeze: True
+    spa:
+      ckpt_path: null
+      cfg:
+        model_type: 'spa_vit_base_patch16'
+        freeze: True

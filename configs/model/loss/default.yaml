@@ -1,0 +1,30 @@
+
+train:
+  _target_: src.loss.loss.Loss
+  cfg:
+    losses:
+      - type: 'smooth_l1'
+        weight: [1.0, 0.0]
+        pred_key: 'pred_bbox'
+        gt_key: 'bbox_feat'
+        mask_key: "camera_mask"
+      # - type: 'smooth_l1'
+      #   weight: [2.0, 0.0]
+      #   pred_key: 'regression_boxes'
+      #   gt_key: 'bbox_proj_crop'
+      #   mask_key: "camera_mask"
+
+test:
+  _target_: src.loss.loss.Loss
+  cfg:
+    losses:
+      - type: 'smooth_l1'
+        weight: [1.0, 0.0]
+        pred_key: 'pred_bbox'
+        gt_key: 'bbox_feat'
+        mask_key: "camera_mask"
+      # - type: 'smooth_l1'
+      #   weight: [2.0, 0.0]
+      #   pred_key: 'regression_boxes'
+      #   gt_key: 'bbox_proj_crop'
+      #   mask_key: "camera_mask"

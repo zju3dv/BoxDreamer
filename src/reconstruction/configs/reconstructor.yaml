@@ -1,0 +1,137 @@
+mast3r_cfg: &mast3r
+  method: 'MASt3R'
+  weight: "weight/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth"
+  config:
+    cache_path: "cache/mast3r_cache"
+    device: 'cuda'
+    lr1: 0.07
+    lr2: 0.014
+    niter1: 500
+    niter2: 200
+    optim_level: "refine"
+    shared_intrinsics: False
+    matching_conf_thr: 5.0
+    scenegraph_type: 'complete'
+    winsize: 1
+    win_cyclic: False
+
+dust3r_cfg: &dust3r
+  method: 'DUSt3R'
+  weight: "weight/DUSt3R_ViTLarge_BaseDecoder_512_dpt.pth" # or DUSt3R_ViTLarge_BaseDecoder_512_dpt for online download
+  config:
+    cache_path: "cache/dust3r_cache"
+    device: 'cuda'
+
+colmap_cfg: &colmap
+  method: 'COLMAP'
+  weight: null
+  config:
+    cache_path: "cache/colmap_cache"
+
+vggsfm_cfg: &vggsfm
+  method: 'VggSfM'
+  weight: "weight/vggsfm_v2_0_0.bin"
+
+  config:
+    cache_path: "cache/vggsfm_cache"
+    model_name: "vggsfm_v2_0_0"
+
+    seed: 0
+    img_size: 1024
+
+
+    debug: False
+
+
+    center_order: False
+    mixed_precision: fp16
+    extract_color: True
+    filter_invalid_frame: False
+
+    comple_nonvis: False
+    query_frame_num: 3
+    robust_refine: 2
+    BA_iters: 1
+
+    fine_tracking: True
+
+    camera_type: "SIMPLE_PINHOLE"   # optional: ["SIMPLE_PINHOLE", "SIMPLE_RADIAL"]
+
+    load_gt: False
+    viz_visualize: False
+    gr_visualize: False
+
+    fmat_thres: 4.0
+    max_reproj_error: 4.0
+    init_max_reproj_error: 4.0
+    max_query_pts: 2048
+
+    dense_depth: False
+
+    avg_pose: True
+    shared_camera: True
+
+    save_to_disk: True
+    SCENE_DIR: examples/kitchen
+
+    resume_ckpt:  ckpt/vggsfm_v2_0_0.bin
+    auto_download_ckpt: True
+
+    query_method: "aliked"
+
+    use_poselib: True
+
+    shift_point2d_to_original_res: False
+
+    make_reproj_video: False
+
+    visual_tracks: True
+    visual_query_points: True
+    visual_dense_point_cloud: False
+
+
+    query_by_midpoint: False
+    query_by_interval: False
+
+    concat_extra_points: False
+    extra_pt_pixel_interval: -1
+    extra_by_neighbor: -1
+
+    MODEL:
+        _target_: vggsfm.models.VGGSfM
+
+        TRACK:
+            _target_: vggsfm.models.TrackerPredictor
+
+            efficient_corr: False
+
+            COARSE:
+                stride: 4
+                down_ratio: 2
+                FEATURENET:
+                    _target_: vggsfm.models.BasicEncoder
+
+                PREDICTOR:
+                    _target_: vggsfm.models.BaseTrackerPredictor
+
+            FINE:
+                FEATURENET:
+                    _target_: vggsfm.models.ShallowEncoder
+
+
+                PREDICTOR:
+                    _target_: vggsfm.models.BaseTrackerPredictor
+                    depth: 4
+                    corr_levels: 3
+                    corr_radius: 3
+                    latent_dim: 32
+                    hidden_size: 256
+                    fine: True
+                    use_spaceatt: False
+
+        CAMERA:
+            _target_: vggsfm.models.CameraPredictor
+
+
+        TRIANGULAE:
+            _target_: vggsfm.models.Triangulator

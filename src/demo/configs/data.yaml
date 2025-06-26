@@ -1,0 +1,37 @@
+# Shared base configuration for all datasets
+base_config: &base_config
+  image_size: 224
+  length: 6  # Default length, can be overridden
+  dynamic_length: False
+  stride: [1, 10]  # Default stride, can be overridden
+  dynamic_stride: False
+  random_stride: False
+  uniform_sampling: True  # Default sampling method
+  fps_sampling: False  # Default sampling method
+  pose_augmentation: False
+  intri_augmentation: False
+  compute_optical: True
+  max_norm: False
+  precision: '16'
+  coordinate: 'object'
+  use_bbox: True
+  use_mask: False
+  mask_bg: True
+  reconstruction_stage: False # means only load reference image
+  pose_representation: 'bb8'
+  bbox_representation: 'heatmap'
+
+  augmentation: # only used for training set
+    rgb_augmethods: ['dark', 'mobile'] # 'YCBAug', 'FDA' or null
+    obj_truncation_ratio: 0.3
+    obj_mask_ratio: 0.3
+    enable_image_rotation: False
+
+
+# Dataset-specific configurations
+Custom:
+  name: 'Custom'
+  config:
+    base:
+      <<: *base_config
+    root: "data/demo"
