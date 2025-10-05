@@ -1980,24 +1980,25 @@ def main():
         gr.Markdown(
             """
                         <p>
-                            <a href="https://yuanhongyu.xyz/">Yuanhong Yu</a><sup>1,2</sup> &bull;
-                            <a href="https://github.com/hxy-123">Xingyi He</a><sup>1</sup> &bull;
-                            <a href="https://sailor-z.github.io/">Chen Zhao</a><sup>3</sup> &bull;
-                            <a href="https://openreview.net/profile?id=~Junhao_Yu3">Junhao Yu</a><sup>4</sup> &bull;
-                            <a href="https://yangjiaqihomepage.github.io/">Jiaqi Yang</a><sup>5</sup> &bull;
-                            <a href="https://csse.szu.edu.cn/staff/ruizhenhu/">Ruizhen Hu</a><sup>6</sup> &bull;
-                            <a href="https://shenyujun.github.io/">Yujun Shen</a><sup>2</sup> &bull;
-                            <a href="https://openreview.net/profile?id=~Xing_Zhu2">Xing Zhu</a><sup>2</sup> &bull;
+                            <a href="https://yuanhongyu.xyz/">Yuanhong Yu</a><sup>1,3</sup> &bull;
+                            <a href="https://github.com/hxy-123">Xingyi He</a><sup>1,3</sup> &bull;
+                            <a href="https://sailor-z.github.io/">Chen Zhao</a><sup>4</sup> &bull;
+                            <a href="https://openreview.net/profile?id=~Junhao_Yu3">Junhao Yu</a><sup>5</sup> &bull;
+                            <a href="https://yangjiaqihomepage.github.io/">Jiaqi Yang</a><sup>6</sup> &bull;
+                            <a href="https://csse.szu.edu.cn/staff/ruizhenhu/">Ruizhen Hu</a><sup>7</sup> &bull;
+                            <a href="https://shenyujun.github.io/">Yujun Shen</a><sup>3</sup> &bull;
+                            <a href="https://openreview.net/profile?id=~Xing_Zhu2">Xing Zhu</a><sup>3</sup> &bull;
                             <a href="https://www.xzhou.me/">Xiaowei Zhou</a><sup>1</sup> &bull;
-                            <a href="https://pengsida.net/">Sida Peng</a><sup>1</sup>
+                            <a href="https://pengsida.net/">Sida Peng</a><sup>1,2</sup>
                         </p>
                         <p>
                             <sup>1</sup>State Key Lab of CAD & CG, Zhejiang University &nbsp;&nbsp;
-                            <sup>2</sup>Ant Group &nbsp;&nbsp;
-                            <sup>3</sup>EPFL &nbsp;&nbsp;
-                            <sup>4</sup>Chongqing University &nbsp;&nbsp;
-                            <sup>5</sup>Northwestern Polytechnical University &nbsp;&nbsp;
-                            <sup>6</sup>Shenzhen University &nbsp;&nbsp;
+                            <sup>2</sup>Xiangjiang Laboratory &nbsp;&nbsp;
+                            <sup>3</sup>Ant Group &nbsp;&nbsp;
+                            <sup>4</sup>EPFL &nbsp;&nbsp;
+                            <sup>5</sup>Chongqing University &nbsp;&nbsp;
+                            <sup>6</sup>Northwestern Polytechnical University &nbsp;&nbsp;
+                            <sup>7</sup>Shenzhen University &nbsp;&nbsp;
                         </p>
 
                         <p>
@@ -2010,7 +2011,7 @@ def main():
                             </a>
                             &nbsp;&nbsp;
                             <a class="btn btn-light" id="code" href="https://github.com/zju3dv/BoxDreamer" role="button" target="_blank">
-                                Code (Coming Soon)
+                                Code
                             </a>
                         </p>
             """,
