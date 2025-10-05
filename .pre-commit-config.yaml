@@ -1,0 +1,58 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+exclude: ^src/models/sources/
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        exclude: ^assets/
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 5.0.4
+    hooks:
+      - id: flake8
+        exclude: .git,__pycache__,.mypy_cache,.pytest_cache
+        args: ["--max-line-length=130" , "--ignore=F401, F405, F403, E402, E501, W503, F541, E203, F841, E722, E712, F811, E741, E731, E713, F821, E731"]
+
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+        language_version: python3.9
+
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.17
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat_frontmatter
+
+  # - repo: https://github.com/codespell-project/codespell
+  #   rev: v2.3.0
+  #   hooks:
+  #     - id: codespell
+  #       additional_dependencies: [tomli]
+
+  # - repo: https://github.com/PyCQA/docformatter
+  #   rev: 06907d0267368b49b9180eed423fae5697c1e909
+  #   hooks:
+  #     - id: docformatter
+  #       additional_dependencies: [tomli]
+  #       args: ["--in-place"]
+
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.1.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: []
+
+ci:
+  autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
+  autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate
