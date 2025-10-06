@@ -8,19 +8,90 @@ from tqdm import tqdm
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.widgets import RectangleSelector
+import sys
+from loguru import logger
 
 try:
     matplotlib.use("TkAgg")
-except Exception as e:
-    print(f"Error setting matplotlib backend: {e}")
+except Exception:
     pass
+
 import shutil
+
+
+# ============================================================================
+# Logging Configuration
+# ============================================================================
+
+
+def setup_logger():
+    """Setup custom logger with clean formatting."""
+    logger.remove()  # Remove default handler
+
+    # Custom format with colors
+    log_format = (
+        "<green>{time:HH:mm:ss}</green> | "
+        "<level>{level: <8}</level> | "
+        "<level>{message}</level>"
+    )
+
+    # Add handler with custom format
+    logger.add(sys.stderr, format=log_format, level="INFO", colorize=True)
+
+
+# Initialize logger
+setup_logger()
+
+
+def log_header(text):
+    """Print a formatted header."""
+    width = 70
+    logger.info("=" * width)
+    logger.info(f"  {text}")
+    logger.info("=" * width)
+
+
+def log_step(text):
+    """Print a step with arrow."""
+    logger.info(f"→ {text}")
+
+
+def log_success(text):
+    """Print success message."""
+    logger.success(f"✓ {text}")
+
+
+def log_info(text):
+    """Print info message."""
+    logger.info(f"  {text}")
+
+
+def log_warning(text):
+    """Print warning message."""
+    logger.warning(f"⚠ {text}")
+
+
+def log_error(text):
+    """Print error message."""
+    logger.error(f"✗ {text}")
+
+
+# ============================================================================
+# Video Segmentation App
+# ============================================================================
 
 
 class VideoSegmentationApp:
     def __init__(self, model_name="facebook/sam2-hiera-tiny", device="cuda"):
         self.device = device
+
+        log_step("Initializing SAM2")
+        log_info(f"Model: {model_name}")
+        log_info(f"Device: {device}")
+
         self.predictor = SAM2VideoPredictor.from_pretrained(model_name, device=device)
+        log_success("SAM2 loaded")
+
         self.points = []
         self.labels = []
         self.bbox = None
@@ -41,39 +112,48 @@ class VideoSegmentationApp:
         os.makedirs(self.output_dir, exist_ok=True)
 
     def to_device(self, device):
+        log_step(f"Moving model to {device}")
         self.device = device
         self.predictor.to(device)
+        log_success(f"Model moved to {device}")
 
     def set_mask_output_dir(self, mask_output_dir):
         self.mask_output_dir = mask_output_dir
-        print(f"Mask output directory: {self.mask_output_dir}")
+        log_info(f"Mask output: {mask_output_dir}")
 
     def set_box_output_dir(self, box_output_dir):
         self.box_output_dir = box_output_dir
-        print(f"Box output directory: {self.box_output_dir}")
+        log_info(f"Box output: {box_output_dir}")
 
     def load_video(self, video_path):
+        log_step("Loading video")
+
         self.video_path = video_path
         cap = cv2.VideoCapture(video_path)
         self.frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        print(f"Video dimensions: {self.frame_width}x{self.frame_height}")
-        # load video length
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        print(f"Video length: {frame_count} frames")
+        fps = cap.get(cv2.CAP_PROP_FPS)
+
+        log_info(f"Resolution: {self.frame_width}x{self.frame_height}")
+        log_info(f"Frames: {frame_count} ({fps:.1f} FPS)")
+
         cap.release()
 
-        # with torch.inference_mode(), torch.autocast(self.device, dtype=torch.bfloat16):
+        log_info("Initializing SAM2 state")
         self.state = self.predictor.init_state(video_path, True, True)
 
         # Get first frame for annotation
         cap = cv2.VideoCapture(video_path)
         ret, self.frame = cap.read()
         cap.release()
+
         if not ret:
+            log_error("Could not read first frame")
             raise ValueError("Could not read the first frame")
 
         self.current_frame_idx = 0
+        log_success("Video loaded")
 
     def onclick(self, event):
         if event.xdata is None or event.ydata is None:
@@ -86,7 +166,7 @@ class VideoSegmentationApp:
                 self.labels.append(1)
                 self.ax.plot(x, y, "go", markersize=8)  # Green circle for foreground
                 plt.draw()
-                print(f"Added foreground point at ({x}, {y})")
+                log_info(f"Point added: ({x}, {y})")
 
     def line_select_callback(self, eclick, erelease):
         x1, y1 = int(eclick.xdata), int(eclick.ydata)
@@ -104,7 +184,7 @@ class VideoSegmentationApp:
         plt.draw()
 
         self.bbox = [x1, y1, x2, y2]
-        print(f"Set bounding box at ({x1}, {y1}, {x2}, {y2})")
+        log_info(f"Bounding box: [{x1}, {y1}, {x2}, {y2}]")
 
     def toggle_selector(self, event):
         if event.key == "b":
@@ -113,12 +193,12 @@ class VideoSegmentationApp:
                 if self.rs is None:
                     self.rs = RectangleSelector(self.ax, self.line_select_callback)
                 self.rs.set_active(True)
-                print("Switched to bounding box mode. Click and drag to draw a box.")
+                log_info("Mode: Bounding box (click and drag)")
             else:
                 self.mode = "point"
                 if self.rs is not None:
                     self.rs.set_active(False)
-                print("Switched to point mode. Click to add a foreground point.")
+                log_info("Mode: Point selection (click to add)")
         elif event.key == "r":
             self.points = []
             self.labels = []
@@ -126,11 +206,18 @@ class VideoSegmentationApp:
             self.ax.clear()
             self.ax.imshow(cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB))
             plt.draw()
-            print("Reset all annotations.")
+            log_info("Annotations reset")
         elif event.key == " ":  # Space to confirm
             plt.close()
 
     def annotate_frame_matplotlib(self):
+        log_step("Interactive annotation")
+        log_info("Controls:")
+        log_info("  • Click: Add foreground point")
+        log_info("  • 'b': Toggle bounding box mode")
+        log_info("  • 'r': Reset annotations")
+        log_info("  • SPACE: Start segmentation")
+
         self.fig, self.ax = plt.subplots(figsize=(10, 8))
         self.ax.imshow(cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB))
 
@@ -163,9 +250,11 @@ class VideoSegmentationApp:
         if points is not None:
             self.points = points
             self.labels = [1] * len(points)
+            log_info(f"Using {len(points)} points")
 
         if bbox is not None:
             self.bbox = bbox
+            log_info(f"Using bbox: {bbox}")
 
         self.process_and_save_video()
 
@@ -173,11 +262,15 @@ class VideoSegmentationApp:
         return os.path.join(self.output_dir, "segmented_" + video_name)
 
     def release_resources(self):
+        log_step("Releasing resources")
+
         if hasattr(self, "predictor"):
             del self.predictor
             self.state = None
             if self.device == "cuda":
                 torch.cuda.empty_cache()
+
+        log_success("Resources released")
 
     @classmethod
     def initialize_once(cls, model_name="facebook/sam2-hiera-tiny", device="cuda"):
@@ -187,11 +280,12 @@ class VideoSegmentationApp:
 
     def process_and_save_video(self):
         if not self.points and self.bbox is None:
-            print("No annotations provided. Please select a point or a bounding box.")
+            log_error("No annotations provided")
+            log_info("Please select a point or bounding box")
             return
 
         if self.frame_width <= 0 or self.frame_height <= 0:
-            print(f"Invalid frame dimensions: {self.frame_width}x{self.frame_height}")
+            log_error(f"Invalid dimensions: {self.frame_width}x{self.frame_height}")
             return
 
         video_name = os.path.splitext(os.path.basename(self.video_path))[0]
@@ -199,15 +293,12 @@ class VideoSegmentationApp:
         os.makedirs(self.mask_output_dir, exist_ok=True)
         os.makedirs(self.box_output_dir, exist_ok=True)
 
-        print(f"Mask output directory: {self.mask_output_dir}")
-        print(f"Box output directory: {self.box_output_dir}")
-
         # Convert points and labels to tensors
         if self.points:
             points_normalized = [(x, y) for x, y in self.points]
             points_tensor = torch.tensor(points_normalized)
             labels_tensor = torch.tensor(self.labels)
-            print(f"Using {len(self.points)} points as prompts")
+            log_info(f"Using {len(self.points)} points as prompts")
 
         # Prepare for video output
         cap = cv2.VideoCapture(self.video_path)
@@ -223,14 +314,14 @@ class VideoSegmentationApp:
             temp_filename, fourcc, fps, (self.frame_width, self.frame_height)
         )
 
-        print("Processing video...")
+        log_step("Processing video")
         self.bboxes = {}
 
         with torch.inference_mode(), torch.autocast(self.device, dtype=torch.bfloat16):
             # Add prompts
             if self.bbox is not None:
                 bbox_tensor = torch.tensor([self.bbox])
-                print(f"Using bounding box as prompt: {self.bbox}")
+                log_info(f"Using bounding box: {self.bbox}")
                 frame_idx, object_ids, masks = self.predictor.add_new_points_or_box(
                     self.state, 0, obj_id=0, box=bbox_tensor
                 )
@@ -239,16 +330,16 @@ class VideoSegmentationApp:
                     self.state, 0, obj_id=0, points=points_tensor, labels=labels_tensor
                 )
 
-            print(f"Initial segmentation completed for frame {frame_idx}")
-            print(f"Object IDs: {object_ids}")
-            if len(masks) > 0:
-                print(f"First mask shape: {masks[0].shape}, dtype: {masks[0].dtype}")
+            log_success(f"Initial segmentation (frame {frame_idx})")
+            log_info(f"Object IDs: {object_ids}")
 
             # Create a progress bar
-            pbar = tqdm(total=frame_count)
+            pbar = tqdm(total=frame_count, desc="Segmenting", unit="frame")
 
             # Propagate the prompts
             processed_frames = 0
+            mask_count = 0
+
             for frame_idx, object_ids, masks in self.predictor.propagate_in_video(
                 self.state
             ):
@@ -256,7 +347,7 @@ class VideoSegmentationApp:
                 ret, frame = cap.read()
 
                 if not ret:
-                    print(f"Could not read frame {frame_idx}")
+                    log_warning(f"Could not read frame {frame_idx}")
                     break
 
                 combined_mask = np.zeros(
@@ -270,24 +361,21 @@ class VideoSegmentationApp:
 
                     # Check if mask is not empty and has proper shape
                     if mask.size == 0:
-                        print(f"Empty mask for object {obj_id} on frame {frame_idx}")
                         continue
 
                     # Handle different mask dimensions
                     if len(mask.shape) == 3 and mask.shape[0] == 1:
-                        # If mask is 3D with first dimension of 1, squeeze it
                         mask = mask.squeeze(0)
 
-                    # Create a binary mask (1 where mask > 0.0, 0 elsewhere)
+                    # Create a binary mask
                     binary_mask = (mask > 0.0).astype(np.uint8)
 
-                    # Now check dimensions after processing
+                    # Resize if needed
                     if (
                         binary_mask.shape[0] != self.frame_height
                         or binary_mask.shape[1] != self.frame_width
                     ):
                         try:
-                            # Ensure target dimensions are not empty
                             if self.frame_width > 0 and self.frame_height > 0:
                                 binary_mask = cv2.resize(
                                     binary_mask,
@@ -295,43 +383,36 @@ class VideoSegmentationApp:
                                     interpolation=cv2.INTER_NEAREST,
                                 )
                             else:
-                                print(
-                                    f"Invalid target dimensions: {self.frame_width}x{self.frame_height}"
-                                )
                                 continue
                         except cv2.error as e:
-                            print(f"Error resizing mask: {e}")
-                            print(
-                                f"Mask shape: {binary_mask.shape}, Target size: {self.frame_width}x{self.frame_height}"
-                            )
+                            log_warning(f"Resize error on frame {frame_idx}: {str(e)}")
                             continue
 
                     combined_mask = np.logical_or(combined_mask, binary_mask).astype(
                         np.uint8
                     )
 
-                    # Create a 3-channel mask for overlay
+                    # Create overlay
                     color_mask = np.zeros_like(frame)
-                    # Set the color (green) where the binary mask is 1
                     color_mask[:, :, 1] = binary_mask * 255  # Green channel
 
-                    # Blend original frame with color mask
                     alpha = 0.5
                     frame = cv2.addWeighted(frame, 1, color_mask, alpha, 0)
 
+                # Save mask and bbox
                 if np.any(combined_mask):
                     mask_filename = f"{frame_idx:06d}-mask.png"
                     mask_path = os.path.join(self.mask_output_dir, mask_filename)
                     cv2.imwrite(mask_path, combined_mask * 255)
 
                     bbox = self.extract_bbox_from_mask(combined_mask)
-                    bbox_filename = f"{frame_idx:06d}-box.txt"
-                    bbox_path = os.path.join(self.box_output_dir, bbox_filename)
                     if bbox is not None:
                         self.bboxes[frame_idx] = bbox
+                        bbox_filename = f"{frame_idx:06d}-box.txt"
+                        bbox_path = os.path.join(self.box_output_dir, bbox_filename)
                         with open(bbox_path, "w") as f:
-                            # write into txt file
                             f.write(f"{bbox[0]} {bbox[1]} {bbox[2]} {bbox[3]}")
+                        mask_count += 1
 
                 out.write(frame)
                 pbar.update(frame_idx - processed_frames)
@@ -342,36 +423,27 @@ class VideoSegmentationApp:
         cap.release()
         out.release()
 
+        log_success(f"Processed {processed_frames} frames, saved {mask_count} masks")
+
         output_path = os.path.join(
             self.output_dir, "segmented_" + os.path.basename(self.video_path)
         )
         try:
             shutil.copy2(temp_filename, output_path)
             os.unlink(temp_filename)
-            print(f"Segmentation completed! Output saved to: {output_path}")
+            log_success(f"Video saved: {output_path}")
         except Exception as e:
-            print(f"Error copying output file: {e}")
-            print(f"Temporary file is still available at: {temp_filename}")
-
-        # Show a preview of the first frame with mask
-        preview_frame = None
-        cap = cv2.VideoCapture(output_path)
-        ret, preview_frame = cap.read()
-        cap.release()
-
-        if ret:
-            plt.figure(figsize=(10, 8))
-            plt.imshow(cv2.cvtColor(preview_frame, cv2.COLOR_BGR2RGB))
-            plt.title("First frame of the segmented video")
-            plt.axis("off")
-            plt.show()
+            log_error(f"Failed to save output: {str(e)}")
+            log_info(f"Temporary file: {temp_filename}")
 
 
 def main():
+    log_header("SAM2 Video Segmentation")
+
     app = VideoSegmentationApp()
 
     # Get video path from user
-    video_path = input("Enter the path to your video file: ")
+    video_path = input("\nEnter video path: ")
 
     # Load video and run application
     try:
@@ -380,11 +452,14 @@ def main():
         app.set_mask_output_dir("./cache/segs/masks")
         app.annotate_frame_matplotlib()
         app.process_and_save_video()
+
+        log_header("Processing Complete!")
+
     except Exception as e:
-        print(f"Error: {e}")
+        log_error(f"Processing failed: {str(e)}")
         import traceback
 
-        traceback.print_exc()
+        logger.error(traceback.format_exc())
 
 
 if __name__ == "__main__":
