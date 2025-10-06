@@ -52,7 +52,7 @@
 - [📋 Table of Contents](#-table-of-contents)
 - [📦 Method Overview](#-method-overview)
 - [💻 Installation](#-installation)
-- [📱CLI Demo](#cli-usage)
+- [📱 CLI Demo](#cli-usage)
 - [🤗 Gradio demo](#-gradio-demo)
 - [📂 Dataset Preparation](#-dataset-preparation)
   - [LINEMOD](#linemod)
