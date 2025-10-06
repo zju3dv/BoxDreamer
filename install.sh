@@ -786,7 +786,7 @@ echo ""
 
 echo -e "${CYAN}Documentation:${NC}"
 echo -e "  • README: ${BLUE}cat README.md${NC}"
-echo -e "  • GitHub: ${BLUE}https://github.com/yourusername/boxdreamer${NC}"
+echo -e "  • GitHub: ${BLUE}https://github.com/zju3dv/boxdreamer${NC}"
 echo ""
 
 if [ -d "weights" ] && [ "$(ls -A weights)" ]; then
