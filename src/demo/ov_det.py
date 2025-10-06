@@ -13,6 +13,7 @@ import supervision as sv
 from typing import List, Optional, Union
 import sys
 from loguru import logger
+from pathlib import Path
 
 
 # ============================================================================
@@ -133,11 +134,23 @@ class GroundingDinoSegmentationApp:
 
             # Download and load model
             if "tiny" in model_name.lower():
-                config_path = "three/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
-                checkpoint_path = "weights/groundingdino_swint_ogc.pth"
+                config_path = (
+                    Path(__file__).parent.parent.parent
+                    / "three/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
+                )
+                checkpoint_path = (
+                    Path(__file__).parent.parent.parent
+                    / "weights/groundingdino_swint_ogc.pth"
+                )
             else:
-                config_path = "three/GroundingDINO/groundingdino/config/GroundingDINO_SwinB.cfg.py"
-                checkpoint_path = "weights/groundingdino_swinb_cogcoor.pth"
+                config_path = (
+                    Path(__file__).parent.parent.parent
+                    / "three/GroundingDINO/groundingdino/config/GroundingDINO_SwinB.cfg.py"
+                )
+                checkpoint_path = (
+                    Path(__file__).parent.parent.parent
+                    / "weights/groundingdino_swinb_cogcoor.pth"
+                )
 
             # Try to load from local path first, fallback to huggingface
             try:

@@ -32,6 +32,7 @@ import sys
 import io
 from contextlib import redirect_stdout, redirect_stderr
 from loguru import logger
+from pathlib import Path
 
 try:
     import cupy as cp
@@ -1319,13 +1320,15 @@ def main():
             log_error("Rerun not installed: pip install rerun-sdk")
             args.rerun = False
 
-    with open("src/demo/configs/data.yaml") as f:
+    CONFIG_DIR = Path(__file__).parent / "configs"
+
+    with open(CONFIG_DIR / "data.yaml") as f:
         data_cfgs = omegaconf.OmegaConf.load(f)
 
-    with open("src/demo/configs/reconstructor.yaml") as f:
+    with open(CONFIG_DIR / "reconstructor.yaml") as f:
         recon_cfgs = omegaconf.OmegaConf.load(f)
 
-    with open("src/demo/configs/model.yaml") as f:
+    with open(CONFIG_DIR / "model.yaml") as f:
         model_cfgs = omegaconf.OmegaConf.load(f)
 
     data_cfgs.Custom.config.root = os.path.dirname(args.video)
