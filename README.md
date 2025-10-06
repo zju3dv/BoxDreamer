@@ -52,7 +52,7 @@
 - [📋 Table of Contents](#-table-of-contents)
 - [📦 Method Overview](#-method-overview)
 - [💻 Installation](#-installation)
-- [📱 CLI Demo](#cli-usage)
+- [📱 CLI Demo](#-cli-usage)
 - [🤗 Gradio demo](#-gradio-demo)
 - [📂 Dataset Preparation](#-dataset-preparation)
   - [LINEMOD](#linemod)
@@ -406,4 +406,4 @@ We thank the authors of these repositories for making their code available.
 - [OnePose](https://github.com/zju3dv/OnePose) and [OnePose++](https://github.com/zju3dv/OnePose_Plus_Plus)
 - [Camera as Rays](http://github.com/jasonyzhang/RayDiffusion)
 
-At the same time, I would like to thank [Yating Wang](https://scholar.google.com.hk/citations?user=5SuBWh0AAAAJ&hl=zh-CN), [Chengrui Dong](https://scholar.google.com/citations?user=rWSguOUAAAAJ&hl=zh-CN), and Yiguo Fan for their sincere suggestions and the valuable live demonstrations they provided.
+At the same time, I would like to thank [Yating Wang](https://scholar.google.com.hk/citations?user=5SuBWh0AAAAJ&hl=zh-CN), [Chengrui Dong](https://scholar.google.com/citations?user=rWSguOUAAAAJ&hl=zh-CN), and [Yiguo Fan](https://scholar.google.com/citations?user=VcBEZFcAAAAJ&hl=zh-CN) for their sincere suggestions and the valuable live demonstrations they provided.
