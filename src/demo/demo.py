@@ -1102,7 +1102,9 @@ def log_to_rerun(
             rr.log("stats/fps_text", rr.TextLog(f"FPS: {fps_value:.1f}"))
 
 
-def create_output_directories(video_path, output_base="./cache/BoxDreamer"):
+def create_output_directories(
+    video_path, output_base=f"{Path(__file__).parent.parent.parent}/cache/BoxDreamer"
+):
     """Create timestamped output directory structure."""
     video_name = os.path.splitext(os.path.basename(video_path))[0]
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
