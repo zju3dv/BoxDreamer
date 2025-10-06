@@ -20,6 +20,7 @@
 ### [Project Page](https://zju3dv.github.io/boxdreamer) | [Paper](https://arxiv.org/pdf/2504.07955) | [🤗 Demo](https://huggingface.co/spaces/LittleFrog/BoxDreamer)
 
 ### ICCV 2025
+
 </div>
 
 <div align="center">
@@ -30,7 +31,9 @@
 [![Hydra](https://img.shields.io/badge/-Hydra_1.3+-89b8cd?logo=hydra&logoColor=white)](https://hydra.cc/)
 [![black](https://img.shields.io/badge/Code%20Style-Black-black.svg?labelColor=gray)](https://black.readthedocs.io/en/stable/)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+
 <!-- ![Wandb](https://raw.githubusercontent.com/wandb/assets/main/wandb-github-badge-gradient.svg) -->
+
 [![Model on HF](https://huggingface.co/datasets/huggingface/badges/resolve/main/model-on-hf-md-dark.svg)](https://huggingface.co/yyh929/BoxDreamer)
 [![Deploy on Spaces](https://huggingface.co/datasets/huggingface/badges/resolve/main/deploy-on-spaces-md-dark.svg)](https://huggingface.co/spaces/LittleFrog/BoxDreamer)
 
@@ -38,21 +41,22 @@
 
 > 📦✨ Dream up accurate 3D bounding boxes for objects in the wild!
 
+## 📅 News
+
+- **\[2025.10.06\]** 🎉 BoxDreamer demo upgraded! Now supports CLI usage for easier interaction!
+- **\[2025.06.26\]** 🏆 Paper accepted by ICCV 2025! Code is now open-sourced on GitHub!
+- **\[2025.04.10\]** 📄 BoxDreamer paper released on arXiv!
+
 ## 📋 Table of Contents
 
 - [📋 Table of Contents](#-table-of-contents)
 - [📦 Method Overview](#-method-overview)
-- [📅 Release Roadmap](#-release-roadmap)
-- [📋 Reconstuction methods support list](#-reconstuction-methods-support-list)
 - [💻 Installation](#-installation)
-- [🤝 Third-party Dependencies](#-third-party-dependencies)
-  - [Add submodules](#add-submodules)
-  - [Make vscode python env work correctly (Optional)](#make-vscode-python-env-work-correctly-optional)
-- [🔗 Download ckpts for reconstruction](#-download-ckpts-for-reconstruction)
+- [📱CLI Demo](#cli-usage)
 - [🤗 Gradio demo](#-gradio-demo)
 - [📂 Dataset Preparation](#-dataset-preparation)
   - [LINEMOD](#linemod)
-  - [OnePose \& OnePose-LowTexture](#onepose--onepose-lowtexture)
+  - [OnePose & OnePose-LowTexture](#onepose--onepose-lowtexture)
   - [Occluded LINEMOD](#occluded-linemod)
   - [YCB-Video](#ycb-video)
   - [Preprocess](#preprocess)
@@ -61,7 +65,7 @@
     - [Occluded LINEMOD Preprocess](#occluded-linemod-preprocess)
 - [Reference Database Creation (Optional)](#reference-database-creation-optional)
 - [🚀 Reconstruction](#-reconstruction)
-- [🏋️ Training](#️-training)
+- [🏋️ Training](#%EF%B8%8F-training)
 - [📊 Evaluation](#-evaluation)
 - [📦 Model Zoo](#-model-zoo)
 - [❓ Frequently Asked Questions](#-frequently-asked-questions)
@@ -75,96 +79,150 @@
   <img src="assets/main_fig.png" width="100%" alt="BoxDreamer">
 </p>
 
-## 📅 Release Roadmap
-
-| Feature                                                          | Status         | Due Date       |
-| ---------------------------------------------------------------- | -------------- | -------------- |
-| Core model implementation                                        | ✅ Complete    | March 13, 2025 |
-| Pretrained model weights                                         | ✅ Complete    | March 20, 2025 |
-| Detailed training & fine-tuning instructions (on custom dataset) | ⏳ In Progress | TBD            |
-| Support more reconstruction methods                              | Planning       | TBD            |
-
-## 📋 Reconstuction methods support list
-
-- [x] DUSt3R
-- [x] Colmap
-- \[\] VGGSFM
-- \[\] VGGT
-- \[\] MASt3R
-- \[\] Fast3R
-
 ## 💻 Installation
 
-Follow the steps below to set up your environment for BoxDreamer. For faster dependency installation, we recommend using [uv](https://docs.astral.sh/uv/#highlights).
+BoxDreamer supports two installation methods: a fast automated script or manual step-by-step installation. Choose the method that best suits your needs.
+
+### Method 1: Fast Installation (Recommended)
+
+If your system is compatible with PyTorch 2.5.1 + CUDA 12.1, use our automated installation script:
 
 ```bash
-# Create a conda environment
+bash install.sh
+```
+
+After successful installation, you can immediately start using BoxDreamer via the [CLI](#cli-usage) or [Gradio demo](#-gradio-demo).
+
+### Method 2: Manual Installation
+
+For custom configurations or troubleshooting, follow these steps:
+
+#### Step 1: Create Environment
+
+```bash
+# Create and activate conda environment
 conda create -n boxdreamer python=3.11
 conda activate boxdreamer
+```
 
-# Install PyTorch (adjust for your CUDA version)
-pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+#### Step 2: Install uv Package Manager
 
-# Install Pytorch3d
+We recommend using [uv](https://docs.astral.sh/uv/#highlights) for faster dependency installation:
+
+```bash
+pip install uv
+```
+
+#### Step 3: Install Core Dependencies
+
+```bash
+# Install PyTorch (adjust CUDA version if needed)
+uv pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+
+# Install PyTorch3D
 pip install "git+https://github.com/facebookresearch/pytorch3d.git"
 
-# Install dependencies
-pip install -r requirements.txt
+# Install Flash Attention
+pip install flash_attn
 
-# (Optional) Install SAM2 for real-world demo (CUDA 12.1 + python 3.11 + pytorch 2.5.1)
-# Find suitable whl from https://miropsota.github.io/torch_packages_builder/sam-2/
+# Install xformers
+pip install xformers==0.0.28.post3
+```
+
+#### Step 4: Install Project Dependencies
+
+```bash
+# Install required packages
+uv pip install -r requirements.txt
+
+# Install BoxDreamer
+pip install -e .
+```
+
+#### Step 5: (Optional) Install SAM2 for Real-World Demo
+
+For CUDA 12.1 + Python 3.11 + PyTorch 2.5.1:
+
+```bash
+# Download pre-built wheel from https://miropsota.github.io/torch_packages_builder/sam-2/
 pip install https://github.com/MiroPsota/torch_packages_builder/releases/download/SAM_2-1.0%2Bc2ec8e1/SAM_2-1.0%2Bc2ec8e1pt2.5.1cu121-cp311-cp311-linux_x86_64.whl
 
+# Install additional demo dependencies
 pip install decord pyqt5 gradio transformers
-
 ```
 
-Optional: Use uv for Faster Dependency Installation
-
-```bash
-# install uv
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-and running pip command with uv like:
-
-```bash
-uv pip install -r requirements.txt
-```
-
-## 🤝 Third-party Dependencies
-
-### Add submodules
-
-<!-- git submodule add git@github.com:naver/mast3r.git ./three/mast3r
-git submodule add https://github.com/naver/dust3r.git ./three/dust3r
-git submodule add git@github.com:facebookresearch/vggsfm.git ./three/vggsfm -->
+#### Step 6: Initialize Submodules
 
 ```bash
 git submodule update --init --recursive
 ```
 
-### Make vscode python env work correctly (Optional)
+#### Step 7: (Optional) Configure VS Code Python Environment
 
 ```bash
 touch .env
 echo "PYTHONPATH=three/dust3r" >> .env
 ```
 
-## 🔗 Download ckpts for reconstruction
+### Download Model Checkpoints
+
+#### Required: Reconstruction Models
 
 ```bash
-mkdir weights && cd weights
+mkdir -p weights && cd weights
 wget https://download.europe.naverlabs.com/ComputerVision/DUSt3R/DUSt3R_ViTLarge_BaseDecoder_512_dpt.pth
 ```
 
-## 🤗 Gradio demo
+#### Optional: Grounding DINO (for demo usage)
 
 ```bash
+wget https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth
+```
+
+### Verify Installation
+
+Test your installation with the CLI:
+
+```bash
+boxdreamer-cli --help
+```
+
+If you see the help menu, installation was successful! Proceed to [CLI Usage](#cli-usage) or try the [Gradio demo](#-gradio-demo).
+
+______________________________________________________________________
+
+## 📱 CLI Usage
+
+```bash
+# Display help and available options
+boxdreamer-cli --help
+
+# Process video with text prompt (automatic object detection)
+boxdreamer-cli --video src/demo/examples/mode1/mode1-4.mp4 \
+  --show_point_cloud --interactive --use_grounding_dino \
+  --text_prompt "Controller"
+
+# Manual object annotation mode
+boxdreamer-cli --video src/demo/examples/mode1/mode1-4.mp4 \
+  --show_point_cloud --interactive
+
+# Auto reference frame selection
+boxdreamer-cli --video src/demo/examples/mode1/mode1-4.mp4 \
+  --show_point_cloud
+
+# Quick processing (without point cloud rendering)
+boxdreamer-cli --video src/demo/examples/mode1/mode1-4.mp4
+```
+
+## 🤗 Gradio Demo
+
+Launch the interactive web interface:
+
+```bash
+# Using local checkpoint
 python -m src.demo.gradio_demo --ckpt path_to_boxdreamer_ckpt
 
-# Or, load ckpt from huggingface
-
+# Or load from Hugging Face
 python -m src.demo.gradio_demo --hf
 ```
 
@@ -287,15 +345,14 @@ python run.py --hf --reproducibility --config-name=test.yaml \
   If not provided, full views database will be used
 - length: Number of reference views + 1 query view
 
-
 For evaluation with a dense reference database, set length to the total number of reference images plus one. Enabling the DINO feature filter (model.modules.dense_cfg.enable=True) will further assist in selecting the most relevant neighbor views for the decoder input.
 
 ## 📦 Model Zoo
 
-| Version      | Training Data       | Params | Download                                                                |
-| ------------ | ------------------- | ------ | ----------------------------------------------------------------------- |
-| Latest | Objaverse + OnePose | 88.6M  | [Download](https://1drv.ms/u/s!Ap2hsgjizYNElLIwfl1m9d3V1yf_OA?e=9sixmD) |
-| Pretrained | Objaverse | 88.6M  | Coming soon |
+| Version    | Training Data       | Params | Download                                                                |
+| ---------- | ------------------- | ------ | ----------------------------------------------------------------------- |
+| Latest     | Objaverse + OnePose | 88.6M  | [Download](https://1drv.ms/u/s!Ap2hsgjizYNElLIwfl1m9d3V1yf_OA?e=9sixmD) |
+| Pretrained | Objaverse           | 88.6M  | Coming soon                                                             |
 
 download the ckpt and put it in `models/checkpoints/subfolder` folder and rename it to `last.ckpt`
 

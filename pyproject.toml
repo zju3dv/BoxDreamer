@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "boxdreamer"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Your Name", email = "yuanhongyu.me@gmail.com"}
+]
+keywords = ["object pose estimation", "computer vision", "deep learning"]
+
+[project.urls]
+Homepage = "https://zju3dv.github.io/boxdreamer/"
+Repository = "https://github.com/zju3dv/BoxDreamer"
+
+[project.scripts]
+boxdreamer-cli = "src.demo.cli:main"

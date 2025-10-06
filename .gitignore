@@ -20,7 +20,6 @@ statistic/
 **/*.pdf
 visualization_results/
 .gradio/
-three/
 
 # User-specific stuff
 .idea/**/workspace.xml

@@ -29,7 +29,6 @@ einops==0.8.1
 executing==2.2.0
 fastjsonschema==2.21.1
 filelock==3.13.1
-flash_attn==2.7.4.post1
 Flask==3.0.3
 fonttools==4.56.0
 frozenlist==1.5.0
@@ -177,3 +176,5 @@ wis3d==1.0.1
 yarl==1.18.3
 zc.lockfile==3.0.post1
 zipp==3.21.0
+rerun-sdk==0.25.1
+groundingdino-py==0.4.0
