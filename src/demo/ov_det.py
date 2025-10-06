@@ -111,7 +111,7 @@ class GroundingDinoSegmentationApp:
         self.current_frame_idx = 0
         self.frame_width = 0
         self.frame_height = 0
-        self.output_dir = "./cache/segs"
+        self.output_dir = f"{Path(__file__).parent.parent.parent}/cache/segs"
         self.mask_output_dir = None
         self.box_output_dir = None
         self.bboxes = {}
@@ -623,8 +623,12 @@ def main():
     # Load video and run application
     try:
         app.load_video(video_path)
-        app.set_box_output_dir("./cache/segs/boxes")
-        app.set_mask_output_dir("./cache/segs/masks")
+        app.set_box_output_dir(
+            f"{Path(__file__).parent.parent.parent}/cache/segs/boxes"
+        )
+        app.set_mask_output_dir(
+            f"{Path(__file__).parent.parent.parent}/cache/segs/masks"
+        )
         app.set_text_prompt(text_prompt)
         app.annotate_frame_matplotlib()
         app.process_and_save_video()

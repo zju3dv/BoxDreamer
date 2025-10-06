@@ -8,9 +8,11 @@ from src.reconstruction.base import BaseReconstructor
 import sqlite3
 import pycolmap
 import torch
+from pathlib import Path
+
 
 class COLMAPReconstructor(BaseReconstructor):
-    def __init__(self, methods='COLMAP', weights=None, config=None):
+    def __init__(self, methods="COLMAP", weights=None, config=None):
         """
         Initialize COLMAPReconstructor.
 
@@ -23,8 +25,16 @@ class COLMAPReconstructor(BaseReconstructor):
         """
         super().__init__(methods)
         self.weights = weights  # Not used in COLMAP, kept for compatibility
-        self.cache_path = config.get('cache_path', './cache/colmap_cache')
-        self.colmap_executable = config.get('colmap_executable', 'colmap')  # Defaults to assuming COLMAP is in PATH
+        self.cache_path = config.get(
+            "cache_path", f"{Path(__file__).parent.parent.parent}/cache/colmap_cache"
+        )
+        if self.cache_path is None:
+            self.cache_path = (
+                f"{Path(__file__).parent.parent.parent}/cache/colmap_cache"
+            )
+        self.colmap_executable = config.get(
+            "colmap_executable", "colmap"
+        )  # Defaults to assuming COLMAP is in PATH
 
         # Define necessary paths
         self.project_path = os.path.join(self.cache_path, "project")
@@ -32,22 +42,21 @@ class COLMAPReconstructor(BaseReconstructor):
         self.sparse_path = os.path.join(self.project_path, "sparse")
         self.database_path = os.path.join(self.project_path, "database.db")
 
-
         # Clean up previous database and project files (if they exist)
         if os.path.exists(self.database_path):
             os.remove(self.database_path)
         if os.path.exists(self.sparse_path):
             shutil.rmtree(self.sparse_path)
             os.makedirs(self.sparse_path, exist_ok=True)
-            
+
         # Remove the full cache path
         if os.path.exists(self.cache_path):
             shutil.rmtree(self.cache_path)
-            
+
         os.makedirs(self.image_dir, exist_ok=True)
         os.makedirs(self.project_path, exist_ok=True)
         os.makedirs(self.sparse_path, exist_ok=True)
-        
+
     def _reinit(self):
         # Clean up previous database and project files (if they exist)
         if os.path.exists(self.database_path):
@@ -55,16 +64,18 @@ class COLMAPReconstructor(BaseReconstructor):
         if os.path.exists(self.sparse_path):
             shutil.rmtree(self.sparse_path)
             os.makedirs(self.sparse_path, exist_ok=True)
-            
+
         # Remove the full cache path
         if os.path.exists(self.cache_path):
             shutil.rmtree(self.cache_path)
-            
+
         os.makedirs(self.image_dir, exist_ok=True)
         os.makedirs(self.project_path, exist_ok=True)
         os.makedirs(self.sparse_path, exist_ok=True)
 
-    def _square_bbox(self, bbox: np.ndarray, padding: float = 0.1, astype=None) -> np.ndarray:
+    def _square_bbox(
+        self, bbox: np.ndarray, padding: float = 0.1, astype=None
+    ) -> np.ndarray:
         """
         Calculate a square bounding box with optional padding.
 
@@ -88,7 +99,7 @@ class COLMAPReconstructor(BaseReconstructor):
             [center[0] - size, center[1] - size, center[0] + size, center[1] + size],
             dtype=astype,
         )
-        return square_bbox            
+        return square_bbox
 
     def _prepare_before_run(self):
         """
@@ -120,32 +131,43 @@ class COLMAPReconstructor(BaseReconstructor):
         else:
             # Process a list of image file paths
             for img_path, mask_path in zip(self.images, self.masks):
-                img = Image.open(img_path).convert('RGB')
+                img = Image.open(img_path).convert("RGB")
 
                 if mask_path and os.path.exists(mask_path):
-                    if mask_path.endswith(('.png', '.jpg', '.jpeg')):
+                    if mask_path.endswith((".png", ".jpg", ".jpeg")):
                         # If it's an image mask
-                        mask = Image.open(mask_path).convert('L')
-                        img = Image.composite(img, Image.new('RGB', img.size, (0, 0, 0)), mask)
+                        mask = Image.open(mask_path).convert("L")
+                        img = Image.composite(
+                            img, Image.new("RGB", img.size, (0, 0, 0)), mask
+                        )
                         bbox = np.array(mask.getbbox())
                         bbox = self._square_bbox(bbox, padding=0.1)
                         img = img.crop(bbox)
 
-                    elif mask_path.endswith('.txt'):
+                    elif mask_path.endswith(".txt"):
                         # If it's a text-format bounding box
                         bbox = np.loadtxt(mask_path)
                         try:
                             bbox = self._square_bbox(bbox, padding=0.1, astype=int)
                         except:
                             # If bounding box format is [x0, y0, w, h]
-                            bbox = [bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]]
-                            bbox = self._square_bbox(np.array(bbox), padding=0.1, astype=int)
+                            bbox = [
+                                bbox[0],
+                                bbox[1],
+                                bbox[0] + bbox[2],
+                                bbox[1] + bbox[3],
+                            ]
+                            bbox = self._square_bbox(
+                                np.array(bbox), padding=0.1, astype=int
+                            )
                         img = img.crop(bbox)
                     else:
                         raise ValueError("Invalid mask or bounding box file")
 
                 # Save to cache
-                processed_img_path = os.path.join(self.image_dir, os.path.basename(img_path))
+                processed_img_path = os.path.join(
+                    self.image_dir, os.path.basename(img_path)
+                )
                 img.save(processed_img_path)
                 processed_image_paths.append(processed_img_path)
 
@@ -157,9 +179,15 @@ class COLMAPReconstructor(BaseReconstructor):
         """
         self._reinit()
         assert self.images is not None, "Please set the data first"
-        assert hasattr(self, 'gt_poses'), "Please set ground truth poses (self.gt_poses) first"
-        assert hasattr(self, 'intinsics'), "Please set camera intrinsics (self.intinsics) first"
-        assert len(self.gt_poses) == len(self.intinsics) == len(self.images), "Mismatch in the number of poses, intrinsics, and images."
+        assert hasattr(
+            self, "gt_poses"
+        ), "Please set ground truth poses (self.gt_poses) first"
+        assert hasattr(
+            self, "intinsics"
+        ), "Please set camera intrinsics (self.intinsics) first"
+        assert (
+            len(self.gt_poses) == len(self.intinsics) == len(self.images)
+        ), "Mismatch in the number of poses, intrinsics, and images."
         try:
             # Step 1: Process images
             print("Processing images...")
@@ -174,14 +202,14 @@ class COLMAPReconstructor(BaseReconstructor):
             # Step 3: Feature extraction
             print("Extracting features with COLMAP...")
             self._run_feature_extractor()
-            self._check_database('keypoints')
-            self._check_database('descriptors')
+            self._check_database("keypoints")
+            self._check_database("descriptors")
             print("Feature extraction completed.")
 
             # Step 4: Feature matching
             print("Matching features with COLMAP...")
             self._run_exhaustive_matcher()
-            self._check_database('matches')
+            self._check_database("matches")
             print("Feature matching completed.")
 
             # Step 5: Sparse reconstruction
@@ -189,20 +217,18 @@ class COLMAPReconstructor(BaseReconstructor):
             self._run_colmap_reconstruction()
             print("Sparse reconstruction completed.")
 
-
             # Step 6: Export point cloud
             print("Exporting point cloud to PLY...")
             path = self._export_point_cloud()
             print("Point cloud exported.")
-            
-            
+
             # apply pruning
             path = self._self_pruning(path)
             return path
-            
+
         except Exception as e:
             print(f"COLMAP reconstruction failed: {e}")
-            return 'none'
+            return "none"
 
     def _rotation_matrix_to_quaternion(self, R):
         """
@@ -215,7 +241,7 @@ class COLMAPReconstructor(BaseReconstructor):
             list: Quaternion [qw, qx, qy, qz].
         """
         # Use numpy to compute the quaternion
-        Q = np.empty((4, ))
+        Q = np.empty((4,))
         trace = R[0, 0] + R[1, 1] + R[2, 2]
 
         if trace > 0:
@@ -257,11 +283,15 @@ class COLMAPReconstructor(BaseReconstructor):
         # Create a new COLMAP database
         print("Creating COLMAP database...")
         try:
-            subprocess.run([
-                self.colmap_executable,
-                "database_creator",
-                "--database_path", self.database_path
-            ], check=True)
+            subprocess.run(
+                [
+                    self.colmap_executable,
+                    "database_creator",
+                    "--database_path",
+                    self.database_path,
+                ],
+                check=True,
+            )
             print("COLMAP database created.")
         except subprocess.CalledProcessError as e:
             print(f"Database creation failed: {e}")
@@ -276,16 +306,21 @@ class COLMAPReconstructor(BaseReconstructor):
         images_txt_path = os.path.join(self.project_path, "images.txt")
         # Create sparse/0 folder
         os.makedirs(os.path.join(self.sparse_path, "0"), exist_ok=True)
-        
+
         # Copy the cameras and images to the project folder
-        shutil.copyfile(cameras_txt_path, os.path.join(self.sparse_path, "0", "cameras.txt"))
-        shutil.copyfile(images_txt_path, os.path.join(self.sparse_path, "0", "images.txt"))
-        
+        shutil.copyfile(
+            cameras_txt_path, os.path.join(self.sparse_path, "0", "cameras.txt")
+        )
+        shutil.copyfile(
+            images_txt_path, os.path.join(self.sparse_path, "0", "images.txt")
+        )
+
         # Create empty points3D.txt
-        with open(os.path.join(self.sparse_path, "0", "points3D.txt"), 'w', encoding='utf-8') as f:
+        with open(
+            os.path.join(self.sparse_path, "0", "points3D.txt"), "w", encoding="utf-8"
+        ) as f:
             # Write nothing
             pass
-
 
         # Import cameras.txt and images.txt into the database
         print("Importing cameras.txt and images.txt into COLMAP database...")
@@ -299,10 +334,10 @@ class COLMAPReconstructor(BaseReconstructor):
             print("Inserting camera information into COLMAP database...")
             for cam in self.cameras:
                 camera = pycolmap.Camera(
-                    model=cam['model'],
-                    width=cam['width'],
-                    height=cam['height'],
-                    params=cam['params']
+                    model=cam["model"],
+                    width=cam["width"],
+                    height=cam["height"],
+                    params=cam["params"],
                 )
                 camera_id = db.add_camera(camera)
 
@@ -310,10 +345,10 @@ class COLMAPReconstructor(BaseReconstructor):
             print("Inserting image information into COLMAP database...")
             for img in self.images_info:
                 image = pycolmap.Image(
-                    name=img['name'],
-                    camera_id=img['camera_id'],
-                    qvec=img['qvec'],
-                    tvec=img['tvec']
+                    name=img["name"],
+                    camera_id=img["camera_id"],
+                    qvec=img["qvec"],
+                    tvec=img["tvec"],
                 )
                 image_id = db.add_image(image)
 
@@ -324,6 +359,7 @@ class COLMAPReconstructor(BaseReconstructor):
             print(f"Importing cameras and images failed: {e}")
             # Log traceback
             import traceback
+
             traceback.print_exc()
             return
 
@@ -353,34 +389,45 @@ class COLMAPReconstructor(BaseReconstructor):
             key = tuple(intrin.flatten().tolist())
             if key not in intrin_to_camera_id:
                 intrin_to_camera_id[key] = camera_id_counter
-                self.cameras.append({
-                    'camera_id': camera_id_counter,
-                    'model': 'PINHOLE',
-                    'width': Image.open(image_paths[0]).width,  # Assuming same size
-                    'height': Image.open(image_paths[0]).height,
-                    'params': [intrin[0, 0], intrin[1, 1], intrin[0, 2], intrin[1, 2]]
-                })
+                self.cameras.append(
+                    {
+                        "camera_id": camera_id_counter,
+                        "model": "PINHOLE",
+                        "width": Image.open(image_paths[0]).width,  # Assuming same size
+                        "height": Image.open(image_paths[0]).height,
+                        "params": [
+                            intrin[0, 0],
+                            intrin[1, 1],
+                            intrin[0, 2],
+                            intrin[1, 2],
+                        ],
+                    }
+                )
                 camera_id_counter += 1
 
         # Write cameras.txt
         cameras_txt_path = os.path.join(self.project_path, "cameras.txt")
-        with open(cameras_txt_path, 'w', encoding='utf-8') as f:
+        with open(cameras_txt_path, "w", encoding="utf-8") as f:
             f.write("# Camera list with one line of data per camera:\n")
             f.write("#   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS...\n")
             for cam in self.cameras:
-                f.write(f"{cam['camera_id']} {cam['model']} {cam['width']} {cam['height']} {' '.join(map(str, cam['params']))}\n")
+                f.write(
+                    f"{cam['camera_id']} {cam['model']} {cam['width']} {cam['height']} {' '.join(map(str, cam['params']))}\n"
+                )
 
         # Store camera information in memory for later database insertion
         # self.cameras already contains all camera information
 
         # Write images.txt
         images_txt_path = os.path.join(self.project_path, "images.txt")
-        with open(images_txt_path, 'w', encoding='utf-8') as f:
+        with open(images_txt_path, "w", encoding="utf-8") as f:
             f.write("# Image list with two lines of data per image:\n")
             f.write("#   IMAGE_ID, QW, QX, QY, QZ, TX, TY, TZ, CAMERA_ID, NAME\n")
             f.write("#   POINTS2D[] as (X, Y, POINT3D_ID)\n")
 
-            for idx, (img_path, pose, intrin) in enumerate(zip(image_paths, gt_poses, intrinsics), start=1):
+            for idx, (img_path, pose, intrin) in enumerate(
+                zip(image_paths, gt_poses, intrinsics), start=1
+            ):
                 # Invert the pose
                 cam2world = torch.linalg.inv(pose)
                 qvec = self._rotation_matrix_to_quaternion(pose[:3, :3])
@@ -391,18 +438,24 @@ class COLMAPReconstructor(BaseReconstructor):
                 intrin = np.array(intrin)
                 key = tuple(intrin.flatten().tolist())
                 camera_id = intrin_to_camera_id[key]
-                image_name = os.path.relpath(img_path, self.cache_path).replace('\\', '/')
+                image_name = os.path.relpath(img_path, self.cache_path).replace(
+                    "\\", "/"
+                )
                 image_name = image_name.split("/")[-1]
 
-                self.images_info.append({
-                    'image_id': idx,
-                    'name': image_name,
-                    'camera_id': camera_id,
-                    'qvec': qvec,
-                    'tvec': tvec.tolist()
-                })
+                self.images_info.append(
+                    {
+                        "image_id": idx,
+                        "name": image_name,
+                        "camera_id": camera_id,
+                        "qvec": qvec,
+                        "tvec": tvec.tolist(),
+                    }
+                )
 
-                f.write(f"{idx} {qvec[0]} {qvec[1]} {qvec[2]} {qvec[3]} {tvec[0]} {tvec[1]} {tvec[2]} {camera_id} {image_name}\n")
+                f.write(
+                    f"{idx} {qvec[0]} {qvec[1]} {qvec[2]} {qvec[3]} {tvec[0]} {tvec[1]} {tvec[2]} {camera_id} {image_name}\n"
+                )
                 f.write("\n")  # POINTS2D[] line left empty
 
     def _run_feature_extractor(self):
@@ -410,13 +463,19 @@ class COLMAPReconstructor(BaseReconstructor):
         Invoke COLMAP via command line to perform feature extraction.
         """
         try:
-            subprocess.run([
-                self.colmap_executable,
-                "feature_extractor",
-                "--database_path", self.database_path,
-                "--image_path", self.image_dir,
-                "--SiftExtraction.use_gpu", "1"
-            ], check=True)
+            subprocess.run(
+                [
+                    self.colmap_executable,
+                    "feature_extractor",
+                    "--database_path",
+                    self.database_path,
+                    "--image_path",
+                    self.image_dir,
+                    "--SiftExtraction.use_gpu",
+                    "1",
+                ],
+                check=True,
+            )
             print("Feature extraction completed.")
         except subprocess.CalledProcessError as e:
             print(f"Feature extraction failed: {e}")
@@ -427,12 +486,17 @@ class COLMAPReconstructor(BaseReconstructor):
         Invoke COLMAP via command line to perform feature matching.
         """
         try:
-            subprocess.run([
-                self.colmap_executable,
-                "exhaustive_matcher",
-                "--database_path", self.database_path,
-                "--SiftMatching.use_gpu", "1"
-            ], check=True)
+            subprocess.run(
+                [
+                    self.colmap_executable,
+                    "exhaustive_matcher",
+                    "--database_path",
+                    self.database_path,
+                    "--SiftMatching.use_gpu",
+                    "1",
+                ],
+                check=True,
+            )
             print("Feature matching completed.")
         except subprocess.CalledProcessError as e:
             print(f"Feature matching failed: {e}")
@@ -442,17 +506,25 @@ class COLMAPReconstructor(BaseReconstructor):
         """
         Invoke COLMAP via command line to perform sparse reconstruction.
         """
-        
+
         try:
-            subprocess.run([
-                self.colmap_executable,
-                "point_triangulator",
-                "--database_path", self.database_path,
-                "--image_path", self.image_dir,
-                "--input_path", os.path.join(self.sparse_path, "0"),
-                "--output_path", os.path.join(self.sparse_path, "0"),
-                "--log_to_stderr", "1"
-            ], check=True)
+            subprocess.run(
+                [
+                    self.colmap_executable,
+                    "point_triangulator",
+                    "--database_path",
+                    self.database_path,
+                    "--image_path",
+                    self.image_dir,
+                    "--input_path",
+                    os.path.join(self.sparse_path, "0"),
+                    "--output_path",
+                    os.path.join(self.sparse_path, "0"),
+                    "--log_to_stderr",
+                    "1",
+                ],
+                check=True,
+            )
         except subprocess.CalledProcessError as e:
             print(f"Point triangulation failed: {e}")
             raise
@@ -471,13 +543,19 @@ class COLMAPReconstructor(BaseReconstructor):
 
         # Export point cloud to PLY format
         try:
-            subprocess.run([
-                self.colmap_executable,
-                "model_converter",
-                "--input_path", model_path,
-                "--output_path", ply_output_path,
-                "--output_type", "PLY"
-            ], check=True)
+            subprocess.run(
+                [
+                    self.colmap_executable,
+                    "model_converter",
+                    "--input_path",
+                    model_path,
+                    "--output_path",
+                    ply_output_path,
+                    "--output_type",
+                    "PLY",
+                ],
+                check=True,
+            )
             print(f"Point cloud exported to {ply_output_path}")
 
             # Optionally visualize using trimesh

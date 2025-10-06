@@ -2,7 +2,7 @@ mast3r_cfg: &mast3r
   method: 'MASt3R'
   weight: "weight/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric.pth"
   config:
-    cache_path: "cache/mast3r_cache"
+    cache_path: null
     device: 'cuda'
     lr1: 0.07
     lr2: 0.014
@@ -19,14 +19,14 @@ dust3r_cfg: &dust3r
   method: 'DUSt3R'
   weight:  naver/DUSt3R_ViTLarge_BaseDecoder_512_dpt # load from hf
   config:
-    cache_path: "cache/dust3r_cache"
+    cache_path: null
     device: 'cuda'
 
 colmap_cfg: &colmap
   method: 'COLMAP'
   weight: null
   config:
-    cache_path: "cache/colmap_cache"
+    cache_path: null
 
 vggsfm_cfg: &vggsfm
   method: 'VggSfM'

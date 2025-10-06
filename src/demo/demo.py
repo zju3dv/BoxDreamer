@@ -1269,7 +1269,10 @@ def main():
         "--hf", action="store_true", help="use huggingface", default=True
     )
     parser.add_argument(
-        "--output_base", type=str, default="./cache/BoxDreamer", help="output directory"
+        "--output_base",
+        type=str,
+        default=f"{Path(__file__).parent.parent.parent}/cache/BoxDreamer",
+        help="output directory",
     )
     parser.add_argument("--fps", type=int, default=24, help="output video FPS")
     parser.add_argument(

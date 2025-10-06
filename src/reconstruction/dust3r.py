@@ -43,6 +43,7 @@ import copy
 import matplotlib.pyplot as pl
 from PIL import Image
 import trimesh
+from pathlib import Path
 
 
 class DUSt3RReconstructor(BaseReconstructor):
@@ -50,7 +51,13 @@ class DUSt3RReconstructor(BaseReconstructor):
         super().__init__(methods)
         assert weights is not None, "Please specify the weights for the model"
         self.weights = weights
-        self.cache_path = config.get("cache_path", "./cache/dust3r_cache")
+        self.cache_path = config.get(
+            "cache_path", f"{Path(__file__).parent.parent.parent}/cache/dust3r_cache"
+        )
+        if self.cache_path is None:
+            self.cache_path = (
+                f"{Path(__file__).parent.parent.parent}/cache/dust3r_cache"
+            )
         self.cache_root = self.cache_path
 
     def _square_bbox(
