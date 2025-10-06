@@ -1,3 +1,6 @@
 [submodule "three/dust3r"]
 	path = three/dust3r
 	url = https://github.com/naver/dust3r.git
+[submodule "three/GroundingDINO"]
+	path = three/GroundingDINO
+	url = https://github.com/IDEA-Research/GroundingDINO.git

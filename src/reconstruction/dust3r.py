@@ -422,7 +422,7 @@ class DUSt3RReconstructor(BaseReconstructor):
         # exit()
         # return new_path
 
-        self.draw_3dbbox(self.images)
+        # self.draw_3dbbox(self.images)
 
         ret = {
             "poses": self.pred_poses,
